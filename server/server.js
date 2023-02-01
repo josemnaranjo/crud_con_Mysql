@@ -2,6 +2,7 @@ import express from 'express'
 import { sequelize } from './config/mysql.config.js';
 import projectsRoutes from './routes/projects.routes.js'
 import tasksRoutes from './routes/tasks.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 app.use(projectsRoutes);
 app.use(tasksRoutes);
+app.use(userRoutes);
 
 
 async function main (){
