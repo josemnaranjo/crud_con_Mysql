@@ -4,41 +4,31 @@ import jwt from 'jsonwebtoken';
 
 
 export const login = async(req,res) => {
-    //buscar usuario
-    let { email , password } = req.body;
+    try {
+        const {email , password} = req.body;
 
-    await User.findAll({
-        where:{
-            email:email
-        }
-    }).then(user=> {
+        const user = await User.findAll({where:{email: email}});
+    
+        if(user===null){
+            return res.json({msg:"El usuario no existe en la base de datos"})
+        };
 
-        if(!user){
-            res.status(404).json({msg:"El usuario no se ha encontrado en la base de datos"})
-        } else {
+        const correctPasword = await bcrypt.compare(password,user[0].password);
 
-            if(bcrypt.compare(password,user.password)){
-
-                //devolvemos token
-                let token = jwt.sign({user:user},"secreto",{
-                    expiresIn:"10h"
-                });
-
-                return res.json({
-                    user:user,
-                    token:token
-                });
-
-            }else{
-
-                //error en la autorizacion
-                res.status(401).json({msg:"Contraseña incorrecta"})
-            }
+        if(!correctPasword){
+            return res.json({msg:"La contraseña es incorrecta"})
         }
 
-    }).catch(err => {
-        res.status(500).json(err);
-    })
+        const token = jwt.sign({user:user},"secreto",{expiresIn:"10h"})
+
+        return res.json({
+            user:user,
+            token:token
+        });
+
+    } catch (error) {
+        res.status(500).json({error:"Algo salio mal "+error});
+    }
 };
 
 
